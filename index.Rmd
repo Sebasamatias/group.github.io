@@ -1,0 +1,430 @@
+---
+title: "Entrega 4"
+author: "Fabricio Flores-Hamil Rojas-Sebastián Matias"
+date: "2023-07-08"
+output: rmdformats::readthedown
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+# 1.Objetivo del reporte
+
+La problemática de pobreza extrema a nivel provincial abordada en este
+trabajo implica la consideración de ciertas variables independientes que
+contribuyen a la explicación del tema elegido en el propósito de
+examinar mediante tecnicas cuantitativas el grado de relación o
+influencia de las VI's seleccionadas, desde base de datos nacionales
+actualizadas, para detallar principales elementos explicativos del
+problema socioeconómico mencionado. Por ello, la elección de técnicas
+idóneas para coadyuvar a este proceso examinador resultan cruciales en
+el analisis del problema: la utilización de una regresión lineal
+múltiple permitió, en primera instancia, la construcción de un modelo
+adecuado que represente adecuadamente el comportamiento de la
+problematica de pobreza extrema en función con las VI's escogidas:acceso
+a recursos hídricos, internet, electricidad, entre otros. Asimismo, la
+ejecución de un análisis factorial exploratorio permitirá identificar
+estructuras subyacentes y factores latentes donde la selección de
+variables esenciales, en contraste con el trabajo de una mayor cantidad
+de las mismas, posibilita la intepretación de los resultados mostrados.
+Debido al caso de estudio elegido, la problemática de pobreza extrema,
+resulta viable utilizar este tipo de técnica ante la gran variedad de
+variables que inciden en la explicación de este problema: acceso
+educativo, desnutrición, acceso al internet, líneas telefónicas, etc. En
+consecuencia, reducir este considerable numero de variables en aquellas
+que posean un mayor grado de explicabilidad y organizarlas en factores
+para determinar su incidencia de asociación con estos permitirán una
+adecuada visualización de las variables con mayor importancia y, por
+ende, contribuir a la generación de nuevas hipótesis en beneficios de la
+situación estudiada.
+
+# 2.Construcción de las bases de datos
+
+La estructuración de la base de datos ha implicado la consideración de
+fuentes cuantitativas de instituciones relacionadas a la formulación de
+políticas públicas y el desarrollo nacional. En primer lugar, se utilizó
+información recopilada a través de la CEPLAN (Centro de Planeamiento
+Estratégico Nacional), dentro del cual rescatamos las siguientes
+variables:
+
+-Porcentaje de acceso al agua de acuerdo a red pública -Porcentaje de la
+cantidad de viviendas de material durable -Porcentaje de acceso a los
+servicios públicos en zonas rurales -Procentaje de desnutrición crónica
+de niños -Frecuencia de patrullaje integrado con la PNP -Frecuencia de
+recojo de residuos solidos.
+
+Por otro lado, se optó por utilizar la página web "datosabiertos.gob.pe"
+para encontrar data actualizada en torno a otras variables explicativas
+del problema en estudios. En efecto, se empleó la data del INEI 2021
+para seleccionar ciertos elementos que contribuyen a la justificación de
+la pobreza extrema en estudio.
+
+-Número de computadoras con acceso a internet -Canales de atención al
+ciudadano -Cantidad de grupos electrógenos -Frecuencia de patrullaje
+integrado con la PNP -Número de lineas de telefonia fiija segun
+municipalidad -Porcentaje de escuelas que cuentan con acceso a internet
+(primaria)
+
+-   Se utilizaron las variables en un nivel provincial para evidenciar
+    la problematica de pobreza extrema desde una óptica de subdivisión
+    administrativa inferior a un departamento y diferente de la
+    perspectiva distrital.
+
+Con las variable recopiladas se procedió a reunirlas en una base de
+datos general creada en excel con el propósito de facilitar su uso en
+las posteriores tecnicas o pruebas cuantitativas previstas para analizar
+la problemática de pobreza extrema en R. Por ello, se utilizaron metodos
+de limpieza de datos y merge para efectuar un orden adecuado entre las
+variables que permitan un trabajo correcto con ellas en el programa de
+R.
+
+Creemos que están variables están muy relacionadas con el problema de
+pobreza extrema que un 5% de la población peruana experimenta acorde con
+la información del INEI(2021). En ese sentido, nuestra base de datos fue
+creada en función a los servicios básicos que una persona debe contar
+para poser una calidad de vida deseada y evitar la condición
+socioeconómica de pobre extremo.
+
+# 3. Modelo de regresión
+
+```{r}
+library(xfun)
+library(rmdformats)
+library(rio)
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(GGally)
+library(Hmisc)
+library(corrplot)
+library(PerformanceAnalytics)
+library(Rmisc)
+library(psych)
+data=import("https://docs.google.com/spreadsheets/d/1AfdMUBBIYEdnT4bwUVK3r-Uxvy7FUhtjkczcR1rqIEs/edit#gid=1279435937")
+```
+
+
+```{r}
+data1 <- subset(data, select = -c(1, 2))
+
+```
+
+**analisis de correlación total**
+
+
+```{r}
+correlacion<-round(cor(data1), 1)
+
+corrplot(correlacion, method="number", type="upper")
+```
+
+```{r}
+chart.Correlation(data1, histogram = F, pch = 19)
+```
+
+**modelo de regresión lineal múltiple**
+
+MODELO 1
+
+```{r}
+modelo1<-lm(POR_POBRE~YI + FREC_PATRULLAJE + COMP_INT + ASPR + LINEA_TELEF + COMUNICA_DIGI + ACCA, data1)
+
+summary(modelo1)
+```
+
+
+INTERPRETACION DEL MEJOR MODELO !
+
+Consideramos que el modelo 1 es mejor porque tiene un Adjusted R-squared
+de 0.2561 (25.61 %), en comparación con el modelo 2 que presenta un
+Adjusted R-squared: 0.2386 (23,86 %). No obstante, si comparamos el
+modelo 1 con el modelo 0, el Adjusted R-squared del modelo 0 es de
+0.3765 (37.65 %), siendo mayor al modelo 1, pero el modelo 0 presenta un
+p-value: 0.0001272 (acercándose más a 0.05 en comparación a los otros
+dos modelos que están más alejados). Así, consideramos que el modelo 1
+es el que explica la variable dependiente POR_POBRE (Pobreza extrema) de
+mejor manera, ya que considera solo 7 variables de las 12 presentadas
+(estas variables son las que más aportan al modelo). Por ello, nos
+quedamos con el modelo 1.
+
+
+A continuacion, haremos el diagnóstico al modelo seleccionado.
+
+Diagnósticos de la regresión
+
+1.  **Linealidad**
+
+```{r}
+plot(modelo1,1)
+```
+
+```{r}
+mean(modelo1$residuals)
+```
+
+Respecto al gráfico mostrado, resulta posible evidenciar que el modelo
+tiende a ser lineal pese a que la parte inicial empieza con una ligera
+curvatura de su posición esperada. Asimismo,con el resultado obtenido
+por las medias residuales dicha afirmación resulta válida para efectos
+explicativos en el diagnóstico de linealidad observada.
+
+2.**Homocedasticidad**
+
+```{r}
+library(lmtest)
+```
+
+```{r}
+library(kableExtra)
+plot(modelo1, 3)
+resBP=bptest(modelo1)
+data.frame(list('BP'=resBP$statistic,
+             'df'=resBP$parameter,
+             "p-value"=resBP$p.value))%>%
+    kable(caption = resBP$method)%>%kable_styling(full_width = F)
+```
+
+De acuerdo a los resultados evidenciados en el diagnóstico de
+homocedasticidad, específicamente lo realizado por el test de
+Breusch-Pagan, el p-value resulta mayor a 0.05 que implica la presencia
+de un modelo heterocedástico que podría afectar la validez del modelo
+planteado. La presencia de p-values con determinados sesgos en las
+variables utilizadas implicaran un notable riesgo que resulta necesario
+considerar para la interpretación del mismo.
+
+3.  **Normalidad de los residuos**
+
+```{r}
+library(kableExtra)
+```
+
+```{r}
+plot(modelo1, 2)
+resSW=shapiro.test(modelo1$residuals)
+data.frame(list('SW'=resSW$statistic,
+             "p-value"=resSW$p.value))%>%
+    kable(caption = resSW$method)%>%kable_styling(full_width = F)
+```
+
+El test de Shapiro nos muestra que el p-value resulta menor a 0.05: los
+residuos de la data no se distribuyen de forma normal. Las distancias
+entre los valores observados y esperados no se reparten de manera
+adecuada.
+
+4.  **No multicolinealidad**
+
+```{r}
+library(DescTools)
+library(kableExtra)
+```
+
+```{r}
+VIF(modelo1) %>%kable(col.names = "VIF",caption ="Evaluando Multicolinealidad usando VIF (Variance Inflation Factors)" )%>%kable_styling(full_width = F)
+```
+
+Conforme con la data producida, se asegura la ausencia de variables
+independientes fuertemente correlacionadas que perjudiquen la medición
+de nuestro modelo. La prueba VIF efectuada muestra valores menores a
+cinco que nos permiten evitar medir una variable independiente dos veces
+y ,de esa forma, no confundir al modelo planteado.
+
+5.**valores influyentes**
+
+```{r}
+plot(modelo1, 5)
+```
+
+```{r}
+checkReg2=as.data.frame(influence.measures(modelo1)$is.inf)
+checkReg2[checkReg2$cook.d & checkReg2$hat,c('cook.d','hat')]%>%kable(caption = "Valores Influyentes criticos")%>%kable_styling(full_width = F)
+```
+
+Conforme con los resultados expuestos, es posible afirmar que NO EXISTEN
+CASOS QUE AFECTEN A LOS CALCULOS DE LA REGRESIÓN PLANTEADA. Ello se
+puede evidenciar en la ausencia de filas observadas en el índice de Cook
+producido.
+
+**Conclusión de la regresión lineal múltiple**
+
+En conclusión, el modelo seleccionado presenta un R cuadrado ajustado
+del 0.2561 que nos brinda una explicación aceptable en torno a la
+problemática de la pobreza extrema que se pretende explicar con las
+distintas variables independientes usadas dentro del modelo propuesto.
+En adición, el p-value evidenciado nos muestra la validación del modelo
+establecido al ser menor a 0.05.
+
+Continuando con los datos recopilados podemos apreciar que de todas las
+variables independientes hay dos en especifico que aportan más al modelo
+que las demás. La variable COMP_INT y la variable ACCA son las que más
+aportan dentro de nuestro modelo. La primera nos dice que COMP_INT que
+se refiere a número de computadoras con acceso a internet muestra que
+entre el porcentaje de pobreza variará en 0.009656 por número de
+computadora que tenga acesso a internet según la provincia que se
+encuentre. En el caso de la variable ACCA que es porcentaje de acceso a
+agua de acuerdo a red pública nos dice que el porcenjate de extrema
+pobreza variará en -0.213366 por la cantidad porcentual variada en el
+acceso al agua. Es decir, entre menos acceso al agua cuente alguna
+provincia mayor sera su porcentaje de pobreza extrema ya que poseen una
+correlación inversamente proporcional.
+
+# 4. Análisis factorial exploratorio
+
+**Repositorio de base de datos**
+
+<https://docs.google.com/spreadsheets/d/1AfdMUBBIYEdnT4bwUVK3r-Uxvy7FUhtjkczcR1rqIEs/edit#gid=1279435937>
+
+Instalación de paquetes necesarios para la AFE e importación de la base
+de datos utilizada
+
+**Preprocesamiento (Formateo de variables)**
+
+Eliminación de columnas con variables categóricas o con caracteres del
+alfabeto español: creación de nuevo objeto con la data modificada.
+
+```{r}
+data1 <- subset(data, select = -c(1, 2,7,8))
+
+```
+
+Conversión a numéricas de las variables restantes
+
+```{r}
+data1$POR_POBRE=as.numeric(data1$POR_POBRE)
+data1$DES_CRONICA=as.numeric(data1$DES_CRONICA)
+data1$ESCU_INTER=as.numeric(data1$ESCU_INTER)
+data1$COMP_INT=as.numeric(data1$COMP_INT)
+data1$ACCA=as.numeric(data1$ACCA)
+data1$ASPR=as.numeric(data1$ASPR)
+data1$VMD=as.numeric(data1$VMD)
+data1$LINEA_TELEF=as.numeric(data1$LINEA_TELEF)
+data1$FREC_PATRULLAJE=as.numeric(data1$FREC_PATRULLAJE)
+data1$YI=as.numeric(data1$YI)
+data1$COMUNICA_DIGI =as.numeric(data1$COMUNICA_DIGI)
+
+```
+
+Eliminación de los NAs que dificultan el proceso de la técnica a
+utilizar
+
+```{r}
+
+data1<- na.omit(data1)
+```
+
+**Análisis factorial exploratorio**
+
+Cálculo de matriz de correlación
+
+```{r}
+library(polycor)
+corMatrix=polycor::hetcor(data1)$correlations
+
+```
+
+Matriz de correlación de forma gráfica.
+
+```{r}
+library(ggcorrplot)
+
+ggcorrplot(corMatrix)
+
+```
+
+De acuero al gráfico mostrado, existe un notable grado de correlación
+entre las variables principalmente aquellas que se relacionan en la
+diagonal central del gráfico. No obstante, resulta necesario reconocer
+que existen numerosas correlaciones que poseen un vínculo bastante
+reducido que podría afectar la AFE y una intepretación adecuada de los
+resultados a obtener.
+
+
+Con ambas pruebas realizadas se procede a determinar el número de
+factores necesarios para redimensionar la data.
+
+```{r}
+fa.parallel(data1, fa = 'fa',correct = T,plot = F)
+```
+
+Redimensionamiento del número de factores con el grado de incidencia de
+cada variable en ellos (loadings).
+
+```{r}
+library(GPArotation)
+resfa <- fa(data1,
+            nfactors = 4,
+            cor = 'mixed',
+            rotate = "varimax",
+            fm="minres")
+print(resfa$loadings)
+```
+
+Se procede a mejorar los resultados obtenido como consecuencia de haber
+obtenido más de un factor.
+
+```{r}
+print(resfa$loadings,cutoff = 0.5)
+```
+
+Por último, se proceden a visualizar, de forma gráfica, la incidencia de
+las variables en los factore establecidos.
+
+```{r}
+fa.diagram(resfa,main = "Resultados del EFA")
+```
+
+```{r}
+sort(resfa$communality)
+```
+
+```{r}
+sort(resfa$complexity)
+```
+
+```{r}
+barplot(resfa$loadings,
+        xlab = "Variables latentes",
+        ylab = "loadings",
+        main = "Gráfico de barras",
+        col = "blue",
+        border = "brown")
+```
+
+INTERPRETACIÓN:
+
+De acuerdo con el gráfico registrado, se puede concluir que tenemos 4
+variables latentes. Asimismo, la variable que más aporta a los factores
+es "LINEA_TELEF" ( 0.8717431), y la variable que contibuye a mas de un
+factor es ESCU_INTER (2.53308), y existe una correlación directa y
+positiva.
+
+```{r}
+as.data.frame(resfa$scores)%>%head()
+```
+
+**Conclusión. Concluya sobre los resultados obtenidos.**
+
+En sintesis, el analisis factorial exploratorio nos permite agrupar
+todas nuestras variables en 4 variables latentes que permitan explicar
+de mejor manera la dependencIa con la pobreza en los servicios básicos
+en las provincias del Perú.
+
+# Conclusión general:
+
+En resumen, debido a los resultados obtenidos tanto en nuestro analisis
+de regresión lineal y analisis factorial podemos concluir: en primer
+lugar, el modelo realizado para explicar la relación de nuestra
+variabale dependiente en función de las variables independientes que son
+los servicios básicos brindan una explicanción de 25.61 %. En segundo
+lugar, gracias al analisis factorial podemos ver que este conjunto de
+variaables se pueden agrupar en factores principales que nos permitan
+entender de mejor manera la dependecia de la pobreza en los servicios
+básicos en las pronvincias del Perú. De esta manera a traves de los
+resultados concretos obetenidos podemos concluir que la pobreza tiende a
+variar en relación de cuánto acceso a servicios báscios esenciales pone
+a disposición nuestro país. Entender esto nos permitirá enfocar los
+procesos de solución de mejor manera y combatir este problema social que
+no solo se vive en nuestro país, sino en el mmundo.
